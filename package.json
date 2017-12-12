@@ -2,8 +2,9 @@
   "name": "easy-shell",
   "displayName": "easy-shell",
   "description": "easy exec shell cmd in vscode editor and get the output",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "publisher": "inu1255",
+  "icon": "screenshot/icon.png",
   "engines": {
     "vscode": "^1.16.0"
   },
@@ -15,6 +16,17 @@
   ],
   "main": "./extension",
   "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "easy shell configuration",
+      "properties": {
+        "easyShell.cloneLine": {
+          "type": "boolean",
+          "default": true,
+          "description": "clone current line when output multiple lines"
+        }
+      }
+    },
     "commands": [
       {
         "command": "easyShell.run",
