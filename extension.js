@@ -17,9 +17,11 @@ function activate(context) {
             if (cloneLine && editer.selection.start.line==editer.selection.end.line) {
                 let b = editer.selection.start.character
                 let e = editer.selection.end.character
-                let line = editer.selection.start.line;
-                let prefix = editer.document.getText(new vscode.Selection(line,0,line,b)).trimLeft()
-                let suffix = editer.document.getText(new vscode.Selection(line,e,line,editer.document.lineCount))
+                let line_num = editer.selection.start.line;
+                let line = editer.document.lineAt(line_num)
+                let line_end = line.range.end.character
+                let prefix = editer.document.getText(new vscode.Selection(line_num,0,line_num,b)).trimLeft()
+                let suffix = editer.document.getText(new vscode.Selection(line_num,e,line_num,line_end))
                 outstr = outstr.replace(/([^\n]*)\n/g, prefix+"$1$$1"+suffix+"\n")
                 outstr = outstr.slice(prefix.length, outstr.length - suffix.length - 1)
             }else{
