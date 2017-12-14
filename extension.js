@@ -13,7 +13,13 @@ function activate(context) {
             editer.selection = new vscode.Selection(line.lineNumber,b,line.lineNumber,line.range.end.character)
         }
         if (!command) return
-        let cmd = shell.exec(command,{cwd:path.dirname(editer.document.fileName)})
+        let cmd = shell.exec(command,{
+            cwd:path.dirname(editer.document.fileName),
+            env:{
+                file: editer.document.fileName,
+                basename: path.basename(editer.document.fileName)
+            }
+        })
         var outstr = ""
         cmd.stdout.on("data", function (data) {
             outstr += data
