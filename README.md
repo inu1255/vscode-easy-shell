@@ -10,7 +10,7 @@ default keymaps `cmd+. cmd+e`
 
 ## Release Notes
 
-### 0.0.6 add env $file for fullname and $basename for basename of current edit file
+### 0.0.7 add env $file for fullname and $basename for basename of current edit file
 ### 0.0.5 run command current line
 ### 0.0.4 add cloneLine features,you can turn on/off it in configuration
 ### 0.0.1
