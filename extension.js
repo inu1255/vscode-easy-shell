@@ -6,6 +6,12 @@ function activate(context) {
     let disposable = vscode.commands.registerCommand('easyShell.run', function () {
         let editer = vscode.window.activeTextEditor
         let command = editer.document.getText(editer.selection)
+        if (!command) {
+            let line = editer.document.lineAt(editer.selection.end.line)
+            command = line.text
+            let b = command.length - line.text.trimLeft().length
+            editer.selection = new vscode.Selection(line.lineNumber,b,line.lineNumber,line.range.end.character)
+        }
         if (!command) return
         let cmd = shell.exec(command,{cwd:path.dirname(editer.document.fileName)})
         var outstr = ""
