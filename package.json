@@ -2,7 +2,7 @@
   "name": "easy-shell",
   "displayName": "easy-shell",
   "description": "easy exec shell cmd in vscode editor and get the output",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "publisher": "inu1255",
   "icon": "screenshot/icon.png",
   "engines": {
