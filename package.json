@@ -2,7 +2,7 @@
   "name": "easy-shell",
   "displayName": "easy-shell",
   "description": "easy exec shell cmd in vscode editor and get the output",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "publisher": "inu1255",
   "icon": "screenshot/icon.png",
   "engines": {
@@ -53,5 +53,20 @@
     "@types/node": "^7.0.0",
     "@types/mocha": "^2.2.42"
   },
-  "dependencies": {}
+  "dependencies": {
+    "iconv-lite": "^0.6.2"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inu1255/vscode-easy-shell.git"
+  },
+  "author": "inu1255",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/inu1255/vscode-easy-shell/issues"
+  },
+  "homepage": "https://github.com/inu1255/vscode-easy-shell#readme"
 }
