@@ -1,61 +1,99 @@
 const vscode = require("vscode");
-const shell = require("child_process");
+const child_process = require("child_process");
 const path = require("path");
+const fs = require("fs");
 const iconv = require("iconv-lite");
 const isWin = process.platform == "win32";
-function streamToBuffer(stream) {
+
+function bufs2str(bufs) {
+	let data = Buffer.concat(bufs);
+	let outstr = isWin ? iconv.decode(data, "gbk") : data;
+	return outstr.replace(/\r\n/g, "\n");
+}
+
+function execShell(command, options) {
 	return new Promise((resolve, reject) => {
+		let cmd = child_process.exec(command, options);
 		let buffers = [];
-		stream.on("error", reject);
-		stream.on("data", (data) => buffers.push(data));
-		stream.on("end", () => resolve(Buffer.concat(buffers)));
+		cmd.stdout.on("data", function (data) {
+			buffers.push(data);
+		});
+		let errors = [];
+		cmd.stderr.on("data", function (data) {
+			errors.push(data);
+		});
+		cmd.on("exit", function (code) {
+			var outstr = bufs2str(buffers);
+			if (code) {
+				vscode.window.showErrorMessage(bufs2str(errors));
+			}
+			resolve(outstr);
+		});
+		cmd.on("error", function (e) {
+			console.log(command, e);
+			resolve("");
+		});
 	});
 }
-function exec(editer, selection) {
-	return new Promise((resolve, reject) => {
-		let command = editer.document.getText(selection);
-		if (!command) {
-			let line = editer.document.lineAt(selection.end.line);
-			command = line.text;
-			let b = command.length - line.text.trimLeft().length;
-			selection = new vscode.Selection(
-				line.lineNumber,
-				b,
-				line.lineNumber,
-				line.range.end.character
-			);
+
+let prev = "";
+async function exec(editer, selection) {
+	const workspace = vscode.workspace.getWorkspaceFolder(editer.document.uri);
+	const clipboard = await vscode.env.clipboard.readText().catch(() => "");
+	const config = vscode.workspace.getConfiguration();
+	const espath = require.resolve(config.get("easyShell.extraModulePath") || "./esdemo.js");
+	const file = editer.document.fileName;
+	let es;
+	try {
+		let stat = fs.statSync(espath);
+		let key = espath + stat.mtimeMs;
+		if (prev != key) {
+			delete require.cache[espath];
 		}
-		if (!command) return;
-		command = command.trim();
-		if (/^\d/.test(command)) {
-			let outstr = eval(command) + "\n";
-			resolve({selection, outstr});
-		} else {
-			let cmd = shell.exec(command, {
-				cwd: path.dirname(editer.document.fileName),
-				encoding: "buffer",
-				env: Object.assign({}, process.env, {
-					file: editer.document.fileName,
-					basename: path.basename(editer.document.fileName),
-				}),
-			});
-			let buffers = [];
-			cmd.stdout.on("data", function (data) {
-				buffers.push(data);
-			});
-			cmd.on("exit", function () {
-				var data = Buffer.concat(buffers);
-				var outstr = "";
-				outstr += isWin ? iconv.decode(data, "gbk") : data;
-				outstr = outstr.replace(/\r\n/g, "\n");
-				resolve({selection, outstr});
-			});
-			cmd.on("error", function (e) {
-				console.log(command, e);
-				resolve("");
-			});
+		es = require(espath);
+		prev = key;
+	} catch (error) {}
+	let command = editer.document.getText(selection);
+	if (!command) {
+		let line = editer.document.lineAt(selection.end.line);
+		command = line.text;
+		let b = command.length - line.text.trimLeft().length;
+		selection = new vscode.Selection(line.lineNumber, b, line.lineNumber, line.range.end.character);
+	}
+	if (!command) return;
+	command = command.trim();
+	if (/^(\d|\(|\w+\.)/.test(command)) {
+		let outstr = "";
+		try {
+			outstr = eval(command);
+			if (typeof outstr == "function") outstr = outstr();
+			if (outstr && typeof outstr.then == "function") outstr = await outstr;
+		} catch (error) {
+			vscode.window.showErrorMessage(error.message);
 		}
-	});
+		try {
+			if (typeof outstr == "object") outstr = JSON.stringify(outstr, null, "\t");
+		} catch (error) {}
+		outstr += "\n";
+		return {selection, outstr};
+	} else {
+		let options = {
+			cwd: path.dirname(file),
+			encoding: "buffer",
+			env: {
+				file: file,
+				basename: path.basename(file),
+				clipboard: clipboard,
+				workspace: workspace ? workspace.uri.fsPath : "",
+			},
+		};
+		let shellPath = config.get("easyShell.shellPath");
+		if (shellPath) {
+			options.shell = shellPath;
+		}
+		let outstr = await execShell(command, options);
+		return {selection, outstr};
+	}
 }
 
 function activate(context) {

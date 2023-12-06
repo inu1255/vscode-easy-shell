@@ -8,12 +8,31 @@ run select text as shell command and replace the select text with the stdout
 
 default keymaps `cmd+. cmd+e`
 
-## Release Notes
+1. exec shell command such as `ls -l`(it will be replaced by the stdout)
+2. exec js code such as `1+2`(it will be replaced by the result `3`)
+3. you can define your own scripts in `somefile.js` and config `easyShell.extraModulePath` in vscode settings
+4. you can switch shell by config `easyShell.shellPath` in vscode settings
 
-### 0.0.8 eval js formula such as 1+2(it will be replace as 3), surport multi cursor command exec
-### 0.0.7 add env $file for fullname and $basename for basename of current edit file
-### 0.0.5 run command current line
-### 0.0.4 add cloneLine features,you can turn on/off it in configuration
-### 0.0.1
+## Extra Module
 
-first release
+create `somefile.js` in some path such as `/home/xxx/somefile.js`
+
+```js
+// /home/xxx/somefile.js
+module.exports = {
+  hello: () => "world",
+};
+```
+
+config `easyShell.extraModulePath` in vscode settings
+
+```json
+{
+  "easyShell.extraModulePath": "/home/xxx/somefile.js"
+}
+```
+
+then you can use `es.hello` or `es.hello()`
+
+
+![](https://github.com/inu1255/vscode-easy-shell/blob/master/screenshot/extra.gif?raw=true)

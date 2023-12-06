@@ -2,7 +2,7 @@
   "name": "easy-shell",
   "displayName": "easy-shell",
   "description": "easy exec shell cmd in vscode editor and get the output",
-  "version": "0.0.9",
+  "version": "1.0.0",
   "publisher": "inu1255",
   "icon": "screenshot/icon.png",
   "engines": {
@@ -18,12 +18,22 @@
   "contributes": {
     "configuration": {
       "type": "object",
-      "title": "easy shell configuration",
+      "title": "EasyShell",
       "properties": {
         "easyShell.cloneLine": {
           "type": "boolean",
           "default": true,
           "description": "clone current line when output multiple lines"
+        },
+        "easyShell.extraModulePath": {
+          "type": "string",
+          "default": "",
+          "description": "easy shell nodejs module path, you can use `es.hello()` to run shell command"
+        },
+        "easyShell.shellPath": {
+          "type": "string",
+          "default": "",
+          "description": "default `cmd.exe` in windows, you can set `powershell.exe` or `bash.exe` path"
         }
       }
     },
