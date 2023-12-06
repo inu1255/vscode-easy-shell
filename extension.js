@@ -39,10 +39,14 @@ function execShell(command, options) {
 let prev = "";
 async function exec(editer, selection) {
 	const workspace = vscode.workspace.getWorkspaceFolder(editer.document.uri);
-	const clipboard = await vscode.env.clipboard.readText().catch(() => "");
 	const config = vscode.workspace.getConfiguration();
 	const espath = require.resolve(config.get("easyShell.extraModulePath") || "./esdemo.js");
 	const file = editer.document.fileName;
+	const cwd = path.dirname(file) || workspace;
+	if (cwd) process.chdir(cwd);
+	process.env.WORKSPACE = workspace ? workspace.uri.fsPath : "";
+	process.env.CLIPBOARD = await vscode.env.clipboard.readText().catch(() => "");
+	process.env.FILE = file;
 	let es;
 	try {
 		let stat = fs.statSync(espath);
@@ -78,13 +82,10 @@ async function exec(editer, selection) {
 		return {selection, outstr};
 	} else {
 		let options = {
-			cwd: path.dirname(file),
 			encoding: "buffer",
 			env: {
 				file: file,
 				basename: path.basename(file),
-				clipboard: clipboard,
-				workspace: workspace ? workspace.uri.fsPath : "",
 			},
 		};
 		let shellPath = config.get("easyShell.shellPath");

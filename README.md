@@ -12,6 +12,7 @@ default keymaps `cmd+. cmd+e`
 2. exec js code such as `1+2`(it will be replaced by the result `3`)
 3. you can define your own scripts in `somefile.js` and config `easyShell.extraModulePath` in vscode settings
 4. you can switch shell by config `easyShell.shellPath` in vscode settings
+5. you can use `$FILE`,`$WORKSPACE`,`$CLIPBOARD` in shell command, in windows you can use `%FILE%`,`%WORKSPACE%`,`%CLIPBOARD%`
 
 ## Extra Module
 
@@ -36,3 +37,5 @@ then you can use `es.hello` or `es.hello()`
 
 
 ![](https://github.com/inu1255/vscode-easy-shell/blob/master/screenshot/extra.gif?raw=true)
+
+more usage see [esdemo.js](esdemo.js)
