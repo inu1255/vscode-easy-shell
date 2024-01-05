@@ -40,7 +40,15 @@ let prev = "";
 async function exec(editer, selection) {
 	const workspace = vscode.workspace.getWorkspaceFolder(editer.document.uri);
 	const config = vscode.workspace.getConfiguration();
-	const espath = require.resolve(config.get("easyShell.extraModulePath") || "./esdemo.js");
+	let espath = require.resolve("./esdemo.js");
+	let extraModulePath = config.get("easyShell.extraModulePath");
+	if (extraModulePath) {
+		try {
+			espath = require.resolve(extraModulePath);
+		} catch (error) {
+			vscode.window.showErrorMessage(`easyShell.extraModulePath: "${extraModulePath}" not found`);
+		}
+	}
 	const file = editer.document.fileName;
 	const cwd = path.dirname(file) || workspace;
 	if (cwd) process.chdir(cwd);
