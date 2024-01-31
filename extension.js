@@ -37,24 +37,15 @@ function execShell(command, options) {
 }
 
 let prev = "";
-async function exec(editer, selection) {
-	const workspace = vscode.workspace.getWorkspaceFolder(editer.document.uri);
-	const config = vscode.workspace.getConfiguration();
+function loades() {
 	let espath = require.resolve("./esdemo.js");
+	const config = vscode.workspace.getConfiguration();
 	let extraModulePath = config.get("easyShell.extraModulePath");
 	if (extraModulePath) {
 		try {
 			espath = require.resolve(extraModulePath);
-		} catch (error) {
-			vscode.window.showErrorMessage(`easyShell.extraModulePath: "${extraModulePath}" not found`);
-		}
+		} catch (error) {}
 	}
-	const file = editer.document.fileName;
-	const cwd = path.dirname(file) || workspace;
-	if (cwd) process.chdir(cwd);
-	process.env.WORKSPACE = workspace ? workspace.uri.fsPath : "";
-	process.env.CLIPBOARD = await vscode.env.clipboard.readText().catch(() => "");
-	process.env.FILE = file;
 	let es;
 	try {
 		let stat = fs.statSync(espath);
@@ -65,6 +56,19 @@ async function exec(editer, selection) {
 		es = require(espath);
 		prev = key;
 	} catch (error) {}
+	return es;
+}
+
+async function exec(editer, selection) {
+	const workspace = vscode.workspace.getWorkspaceFolder(editer.document.uri);
+	const config = vscode.workspace.getConfiguration();
+	const file = editer.document.fileName;
+	const cwd = path.dirname(file) || workspace;
+	if (cwd) process.chdir(cwd);
+	process.env.WORKSPACE = workspace ? workspace.uri.fsPath : "";
+	process.env.CLIPBOARD = await vscode.env.clipboard.readText().catch(() => "");
+	process.env.FILE = file;
+	let es = loades();
 	let command = editer.document.getText(selection);
 	if (!command) {
 		let line = editer.document.lineAt(selection.end.line);
@@ -143,6 +147,30 @@ function activate(context) {
 	});
 
 	context.subscriptions.push(disposable);
+	vscode.languages.getLanguages().then((languages) => {
+		let disposable = vscode.languages.registerCompletionItemProvider(
+			languages,
+			{
+				provideCompletionItems(document, position) {
+					const linePrefix = document.lineAt(position).text.slice(0, position.character).trim();
+					if (!linePrefix.startsWith("es.")) {
+						return undefined;
+					}
+					let es = loades();
+					let list = [];
+					for (let k in es) {
+						let v = es[k];
+						if (typeof v == "function")
+							list.push(new vscode.CompletionItem(k, vscode.CompletionItemKind.Method));
+						else list.push(new vscode.CompletionItem(k, vscode.CompletionItemKind.Field));
+					}
+					return list;
+				},
+			},
+			"."
+		);
+		context.subscriptions.push(disposable);
+	});
 }
 exports.activate = activate;
 
